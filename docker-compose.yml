@@ -15,7 +15,7 @@ services:
         ipv4_address: 172.31.0.2
     healthcheck:
       # test: ["CMD", "curl", "-f", "http://localhost:8011/inference/ETH"]
-      test: ["CMD-SHELL", "curl -f http://localhost:8011/inference/ETH || exit 1 && curl -f http://localhost:8011/inference/BTC || exit 1 && curl -f http://localhost:8011/inference/SOL || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8011/inference/ETH || exit 1 && curl -f http://localhost:8011/inference/BNB || exit 1 && curl -f http://localhost:8011/inference/ARB || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -64,7 +64,7 @@ services:
         fi
         allora-node --role=worker --peer-db=/data/peerdb --function-db=/data/function-db \
           --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
-          --private-key=/data/keys/priv.bin --log-level=debug --port=9101 \
+          --private-key=/data/keys/priv.bin --log-level=debug --port=9107 \
           --boot-nodes=/ip4/45.149.205.38/tcp/9103/p2p/12D3KooWRx6t75bDV9MAEfPobEZj8YoUEYs1GgSSgG2n8FF7aoA5 \
           --topic=allora-topic-7-worker \
           --allora-chain-key-name=net1_worker \
@@ -78,12 +78,94 @@ services:
     depends_on:
       - inference
     ports:
-      - "9101:9101"
+      - "9107:9107"
     networks:
       net1-worker1:
         aliases:
           - worker_topic_1
         ipv4_address: 172.31.0.21
+
+  worker_topic_8:
+    container_name: net1-worker1-topic-8
+    environment:
+      - INFERENCE_API_ADDRESS=http://inference:8011
+      - HOME=/data
+    build:
+      context: .
+      dockerfile: Dockerfile_b7s
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - |
+        if [ ! -f /data/keys/priv.bin ]; then
+          echo "Generating new private keys..."
+          mkdir -p /data/keys
+          cd /data/keys
+          allora-keys
+        fi
+        allora-node --role=worker --peer-db=/data/peerdb --function-db=/data/function-db \
+          --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+          --private-key=/data/keys/priv.bin --log-level=debug --port=9108 \
+          --boot-nodes=/ip4/45.149.205.38/tcp/9103/p2p/12D3KooWRx6t75bDV9MAEfPobEZj8YoUEYs1GgSSgG2n8FF7aoA5 \
+          --topic=allora-topic-8-worker \
+          --allora-chain-key-name=net1_worker \
+          --allora-chain-restore-mnemonic='song job proud mask ramp pole era siege pledge veteran expand music' \
+          --allora-chain-topic-id=8 \
+          --allora-node-rpc-address=https://allora-rpc.testnet-1.testnet.allora.network \
+          --allora-chain-worker-mode=worker
+    volumes:
+      - ./worker-topic-8-data:/data
+    working_dir: /data
+    depends_on:
+      - inference
+    ports:
+      - "9108:9108"
+    networks:
+      net1-worker1:
+        aliases:
+          - worker_topic_1
+        ipv4_address: 172.31.0.22
+  
+  worker_topic_9:
+    container_name: net1-worker1-topic-9
+    environment:
+      - INFERENCE_API_ADDRESS=http://inference:8011
+      - HOME=/data
+    build:
+      context: .
+      dockerfile: Dockerfile_b7s
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - |
+        if [ ! -f /data/keys/priv.bin ]; then
+          echo "Generating new private keys..."
+          mkdir -p /data/keys
+          cd /data/keys
+          allora-keys
+        fi
+        allora-node --role=worker --peer-db=/data/peerdb --function-db=/data/function-db \
+          --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+          --private-key=/data/keys/priv.bin --log-level=debug --port=9109 \
+          --boot-nodes=/ip4/45.149.205.38/tcp/9103/p2p/12D3KooWRx6t75bDV9MAEfPobEZj8YoUEYs1GgSSgG2n8FF7aoA5 \
+          --topic=allora-topic-9-worker \
+          --allora-chain-key-name=net1_worker \
+          --allora-chain-restore-mnemonic='song job proud mask ramp pole era siege pledge veteran expand music' \
+          --allora-chain-topic-id=9 \
+          --allora-node-rpc-address=https://allora-rpc.testnet-1.testnet.allora.network \
+          --allora-chain-worker-mode=worker
+    volumes:
+      - ./worker-topic-9-data:/data
+    working_dir: /data
+    depends_on:
+      - inference
+    ports:
+      - "9109:9109"
+    networks:
+      net1-worker1:
+        aliases:
+          - worker_topic_1
+        ipv4_address: 172.31.0.213
 
 networks:
   net1-worker1:
@@ -95,3 +177,5 @@ networks:
 volumes:
   inference-data:
   worker-topic-7-data:
+  worker-topic-8-data:
+  worker-topic-9-data:
